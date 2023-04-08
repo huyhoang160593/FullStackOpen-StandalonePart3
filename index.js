@@ -24,9 +24,15 @@ const persons = [
   },
 ];
 
-app.get('/api/persons', (request, response) => {
-  response.json(persons)
-})
+app.get("/api/persons", (_, response) => {
+  response.json(persons);
+});
+
+app.get("/info", (_, response) => {
+  response.writeHead(200, { "Content-Type": "text/plain" });
+  response.write(`Phonebook has info for ${persons.length} people \n\n`)
+  response.end(new Date().toString())
+});
 
 const PORT = 3001;
 app.listen(PORT, () => {
