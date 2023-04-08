@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 
+app.use(express.json())
 let persons = [
   {
     id: 1,
@@ -24,6 +25,14 @@ let persons = [
   },
 ];
 
+function generateId () {
+  let maxId = 0
+  if (persons.length > 0) {
+    maxId = Math.max(...persons.map(person => person.id))
+  }
+  return maxId + 1
+}
+
 app.get("/api/persons", (_, response) => {
   response.json(persons);
 });
@@ -36,6 +45,19 @@ app.get("/api/persons/:id", (request, response) => {
   } else {
     response.status(404).end()
   }
+})
+
+app.post("/api/persons", (request, response) => {
+  const body = request.body
+
+  const person = {
+    id: generateId(),
+    name: body.name,
+    number: body.number
+  }
+
+  persons = [...persons, person]
+  response.json(person)
 })
 
 app.delete("/api/persons/:id", (request, response) => {

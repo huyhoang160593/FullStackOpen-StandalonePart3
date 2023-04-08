@@ -26,5 +26,39 @@
     "headers": [],
     "params": [],
     "tests": []
+  },
+  {
+    "_id": "89530274-269a-4894-b797-353208e88974",
+    "colId": "history",
+    "containerId": "",
+    "name": "http://localhost:3001/api/persons",
+    "url": "http://localhost:3001/api/persons",
+    "method": "POST",
+    "sortNum": 0,
+    "created": "2023-04-08T15:47:57.012Z",
+    "modified": "2023-04-08T16:22:26.164Z",
+    "headers": [
+      {
+        "name": "Accept",
+        "value": "*/*",
+        "isDisabled": true
+      },
+      {
+        "name": "User-Agent",
+        "value": "Thunder Client (https://www.thunderclient.com)",
+        "isDisabled": true
+      },
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n  \"name\": \"Huy Hung\",\n  \"number\": \"042-313-232\"\n}",
+      "form": []
+    },
+    "tests": []
   }
 ]
