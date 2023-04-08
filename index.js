@@ -28,6 +28,16 @@ app.get("/api/persons", (_, response) => {
   response.json(persons);
 });
 
+app.get("/api/persons/:id", (request, response) => {
+  const id = Number(request.params.id)
+  const person = persons.find(currentPerson => currentPerson.id === id)
+  if (person) {
+    response.json(person)
+  } else {
+    response.status(404).end()
+  }
+})
+
 app.get("/info", (_, response) => {
   response.writeHead(200, { "Content-Type": "text/plain" });
   response.write(`Phonebook has info for ${persons.length} people \n\n`)
