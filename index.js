@@ -14,37 +14,6 @@ app.use(
 app.use(cors());
 app.use(express.static("build"));
 
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
-
-function generateId() {
-  let maxId = 0;
-  if (persons.length > 0) {
-    maxId = Math.max(...persons.map((person) => person.id));
-  }
-  return maxId + 1;
-}
-
 app.get("/api/persons", (_, response, next) => {
   Contact.find({})
     .then((result) => {
@@ -53,14 +22,10 @@ app.get("/api/persons", (_, response, next) => {
     .catch((error) => next(error));
 });
 
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((currentPerson) => currentPerson.id === id);
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+app.get("/api/persons/:id", (request, response, next) => {
+  Contact.findById(request.params.id).then(result => {
+    response.json(result)
+  }).catch(error => next(error))
 });
 
 app.post("/api/persons", (request, response, next) => {
@@ -71,9 +36,6 @@ app.post("/api/persons", (request, response, next) => {
       name: "MissingParamsError",
       message: "name missing",
     });
-    // return response.status(400).json({
-    //   error: "name missing",
-    // });
   }
 
   if (!body.number) {
@@ -81,9 +43,6 @@ app.post("/api/persons", (request, response, next) => {
       name: "MissingParamsError",
       message: "number missing",
     });
-    // return response.status(400).json({
-    //   error: "number missing",
-    // });
   }
 
   const contact = new Contact({
@@ -97,20 +56,6 @@ app.post("/api/persons", (request, response, next) => {
       response.json(result);
     })
     .catch((error) => next(error));
-  // if (!!persons.find((person) => person.name === body.name)) {
-  //   return response.status(400).json({
-  //     error: "name must be unique",
-  //   });
-  // }
-
-  // const person = {
-  //   id: generateId(),
-  //   name: body.name,
-  //   number: body.number,
-  // };
-
-  // persons = [...persons, person];
-  // response.json(person);
 });
 
 app.put("/api/persons/:id", (request, response, next) => {
@@ -127,17 +72,12 @@ app.put("/api/persons/:id", (request, response, next) => {
 });
 
 app.delete("/api/persons/:id", (request, response, next) => {
-  // const id = Number(request.params.id);
-  // persons = persons.filter((person) => person.id !== id);
   Contact.findByIdAndRemove(request.params.id)
     .then((result) => {
       response.status(204).end();
     })
     .catch((error) => {
       next(error);
-      // response.status(400).json({
-      //   error: `The contact with id ${request.params.id} had been deleted or not exist`
-      // }).end()
     });
 });
 
