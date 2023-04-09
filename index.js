@@ -45,10 +45,12 @@ function generateId() {
   return maxId + 1;
 }
 
-app.get("/api/persons", (_, response) => {
-  Contact.find({}).then((result) => {
-    response.json(result).end();
-  });
+app.get("/api/persons", (_, response, next) => {
+  Contact.find({})
+    .then((result) => {
+      response.json(result).end();
+    })
+    .catch((error) => next(error));
 });
 
 app.get("/api/persons/:id", (request, response) => {
@@ -61,19 +63,27 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
 
   if (!body.name) {
-    return response.status(400).json({
-      error: "name missing",
+    return next({
+      name: "MissingParamsError",
+      message: "name missing",
     });
+    // return response.status(400).json({
+    //   error: "name missing",
+    // });
   }
 
   if (!body.number) {
-    return response.status(400).json({
-      error: "number missing",
+    return next({
+      name: "MissingParamsError",
+      message: "number missing",
     });
+    // return response.status(400).json({
+    //   error: "number missing",
+    // });
   }
 
   const contact = new Contact({
@@ -81,9 +91,12 @@ app.post("/api/persons", (request, response) => {
     number: body.number,
   });
 
-  contact.save().then((result) => {
-    response.json(result);
-  });
+  contact
+    .save()
+    .then((result) => {
+      response.json(result);
+    })
+    .catch((error) => next(error));
   // if (!!persons.find((person) => person.name === body.name)) {
   //   return response.status(400).json({
   //     error: "name must be unique",
@@ -100,16 +113,19 @@ app.post("/api/persons", (request, response) => {
   // response.json(person);
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   // const id = Number(request.params.id);
   // persons = persons.filter((person) => person.id !== id);
-  Contact.findByIdAndRemove(request.params.id).then((result) => {
-    response.status(204).end();
-  }).catch(error => {
-    response.status(400).json({
-      error: `The contact with id ${request.params.id} had been deleted or not exist`
-    }).end()
-  });
+  Contact.findByIdAndRemove(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => {
+      next(error);
+      // response.status(400).json({
+      //   error: `The contact with id ${request.params.id} had been deleted or not exist`
+      // }).end()
+    });
 });
 
 app.get("/info", (_, response) => {
@@ -117,6 +133,22 @@ app.get("/info", (_, response) => {
   response.write(`Phonebook has info for ${persons.length} people \n\n`);
   response.end(new Date().toString());
 });
+
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+  if (error.name === 'MissingParamsError') {
+    return response.status(400).send({ error: error.message })
+  }
+
+  next(JSON.stringify(error));
+};
+
+// handler of request with result to errors, must be use just before app.listen()
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
