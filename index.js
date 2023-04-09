@@ -1,8 +1,8 @@
-require('dotenv').config()
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-const Contact = require('./models/contact')
+const Contact = require("./models/contact");
 
 morgan.token("body", (req, res) => (req.body ? JSON.stringify(req.body) : "-"));
 
@@ -46,9 +46,9 @@ function generateId() {
 }
 
 app.get("/api/persons", (_, response) => {
-  Contact.find({}).then(result => {
-    response.json(result).end()
-  })
+  Contact.find({}).then((result) => {
+    response.json(result).end();
+  });
 });
 
 app.get("/api/persons/:id", (request, response) => {
@@ -78,12 +78,12 @@ app.post("/api/persons", (request, response) => {
 
   const contact = new Contact({
     name: body.name,
-    number: body.number
-  })
+    number: body.number,
+  });
 
   contact.save().then((result) => {
-    response.json(result)
-  })
+    response.json(result);
+  });
   // if (!!persons.find((person) => person.name === body.name)) {
   //   return response.status(400).json({
   //     error: "name must be unique",
@@ -101,10 +101,15 @@ app.post("/api/persons", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
-
-  response.status(204).end();
+  // const id = Number(request.params.id);
+  // persons = persons.filter((person) => person.id !== id);
+  Contact.findByIdAndRemove(request.params.id).then((result) => {
+    response.status(204).end();
+  }).catch(error => {
+    response.status(400).json({
+      error: `The contact with id ${request.params.id} had been deleted or not exist`
+    }).end()
+  });
 });
 
 app.get("/info", (_, response) => {
@@ -113,7 +118,7 @@ app.get("/info", (_, response) => {
   response.end(new Date().toString());
 });
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
