@@ -23,27 +23,29 @@ app.get("/api/persons", (_, response, next) => {
 });
 
 app.get("/api/persons/:id", (request, response, next) => {
-  Contact.findById(request.params.id).then(result => {
-    response.json(result)
-  }).catch(error => next(error))
+  Contact.findById(request.params.id)
+    .then((result) => {
+      response.json(result);
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (request, response, next) => {
   const body = request.body;
 
-  if (!body.name) {
-    return next({
-      name: "MissingParamsError",
-      message: "name missing",
-    });
-  }
+  // if (!body.name) {
+  //   return next({
+  //     name: "MissingParamsError",
+  //     message: "name missing",
+  //   });
+  // }
 
-  if (!body.number) {
-    return next({
-      name: "MissingParamsError",
-      message: "number missing",
-    });
-  }
+  // if (!body.number) {
+  //   return next({
+  //     name: "MissingParamsError",
+  //     message: "number missing",
+  //   });
+  // }
 
   const contact = new Contact({
     name: body.name,
@@ -66,9 +68,9 @@ app.put("/api/persons/:id", (request, response, next) => {
     number: body.number,
   };
 
-  Contact.findByIdAndUpdate(request.params.id, contact, { new: true }).then(
-    (updatedContact) => response.json(updatedContact)
-  ).catch(error => next(error));
+  Contact.findByIdAndUpdate(request.params.id, contact, { new: true, runValidators: true, context: 'query' })
+    .then((updatedContact) => response.json(updatedContact))
+    .catch((error) => next(error));
 });
 
 app.delete("/api/persons/:id", (request, response, next) => {
@@ -96,8 +98,11 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === "MissingParamsError") {
     return response.status(400).send({ error: error.message });
   }
+  if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
+  }
 
-  next(JSON.stringify(error));
+  next(error);
 };
 
 // handler of request with result to errors, must be use just before app.listen()
